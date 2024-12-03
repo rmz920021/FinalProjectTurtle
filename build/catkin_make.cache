@@ -1,0 +1,2 @@
+turtlebot_rescue
+-DCATKIN_DEVEL_PREFIX=/home/cc/ee106a/fa24/class/ee106a-aen/Desktop/FinalProjectTurtle/devel -DCMAKE_INSTALL_PREFIX=/home/cc/ee106a/fa24/class/ee106a-aen/Desktop/FinalProjectTurtle/install -G Unix Makefiles

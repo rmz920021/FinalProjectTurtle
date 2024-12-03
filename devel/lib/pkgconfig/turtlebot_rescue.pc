@@ -1,0 +1,8 @@
+prefix=/home/cc/ee106a/fa24/class/ee106a-aen/Desktop/FinalProjectTurtle/devel
+
+Name: turtlebot_rescue
+Description: Description of turtlebot_rescue
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
