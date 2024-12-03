@@ -47,9 +47,9 @@ $ sudo apt install ros-noetic-turtlebot3
 ## Test RealSense Using ROS:
 * Run `roslaunch realsense2_camera rs_camera.launch` to open the camera. Then run `rosrun rviz rviz`
 * See ros topic by install `ros-noetic-rqt-image-view` and run `rqt_image_view`
-![]("./Assets/ROSTopic.png")
+![](./Assets/ROSTopic.png)
 * See point cloud by install `ros-noetic-rviz` and run `roslaunch realsense2_camera demo_pointcloud.launch `
-![]("./Assets/PointCloud.png")
+![](./Assets/PointCloud.png)
 
 
 ## TODO For slam
