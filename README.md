@@ -47,10 +47,37 @@ $ sudo apt install ros-noetic-turtlebot3
 ## Test RealSense Using ROS:
 * Run `roslaunch realsense2_camera rs_camera.launch` to open the camera. Then run `rosrun rviz rviz`
 * See ros topic by install `ros-noetic-rqt-image-view` and run `rqt_image_view`
-![]("./Assets/ROSTopic.png")
+![](./Assets/ROSTopic.png)
 * See point cloud by install `ros-noetic-rviz` and run `roslaunch realsense2_camera demo_pointcloud.launch `
-![]("./Assets/PointCloud.png")
+![](./Assets/PointCloud.png)
 
 
-## TODO For slam
+## Build a map
 Reference: https://github.com/IntelRealSense/realsense-ros/wiki/SLAM-with-D435i
+1. Install `imu_filter_madgwick`: https://github.com/CCNYRoboticsLab/imu_tools
+2. Install `rtabmap_ros`: https://github.com/introlab/rtabmap_ros
+3. Save ros bag and map
+	* Ros bag: `rosbag record -O my_bagfile_1.bag /camera/aligned_depth_to_color/camera_info  camera/aligned_depth_to_color/image_raw /camera/color/camera_info /camera/color/image_raw /camera/imu /camera/imu_info /tf_static`
+	* Point cloud: `rosrun pcl_ros pointcloud_to_pcd input:=/rtabmap/cloud_map`
+	* Run `pcl-viewer 1733251529469913.pcd`
+	![](./Assets/map.png)
+	![](./Assets/saved_map.png)
+	
+## TODO Compare two images.
+1. Compare two images using opencv ORB-Based Image Comparison
+	* `pip install opencv-python opencv-contrib-python`
+2. Scale up to videos.
+
+
+## Workflow
+1. Use RealSense D435i to simutaneously capture RGB images and point cloud data.
+	* Extract ORB features from RGB images
+	* Use the point cloud data for 3D spatial mapping and object localization
+2. Match the last captured image from the scout TurtleBot before the camera failure with real-time images captuired by second bot.
+3. Localize features in 3D space.
+	* Map the matched ORB features to their corresponding 3D coordinates by realsense packages.
+	* Use the depth information from the D435i to associate 2D features with 3D points.
+4. Navigate to the scout turtlebot
+	* Plan and execute a navigation path for the secondary turtlebot
+5. Verify the scout turtlebot.
+	* Confirm the presence of scout turtlebot using WIFI or keypoint matching.
