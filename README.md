@@ -63,11 +63,19 @@ Reference: https://github.com/IntelRealSense/realsense-ros/wiki/SLAM-with-D435i
 	![](./Assets/map.png)
 	![](./Assets/saved_map.png)
 	
-## TODO Compare two images.
-1. Compare two images using opencv ORB-Based Image Comparison
-	* `pip install opencv-python opencv-contrib-python`
-2. Scale up to videos.
+## Compare two images
+1. Install dependencies: `pip install opencv-python opencv-contrib-python pyrealsense2 numpy matplotlib`
+2. Process: Match features using ORB	
+	* Input: Video Feed
+	* Output: 3D coordinates of matched feature point
+![](./Assets/matchedImage.png)
 
+## TODO
+1. Use the 3D points to localize the scout TurtleBot in the environment. 
+2. Compute the centroid of the matched 3D points as the approximate position of the scout TurtleBot.
+3. Set up the ROS navigation stack (move_base) with the computed 3D position as the goal. 
+4. Convert the 3D position to the robot's frame of reference or map frame if you're using SLAM.
+5. [Optional] Use an object detection model (e.g., YOLO or MobileNet-SSD) to detect the scout TurtleBot visually.
 
 ## Workflow
 1. Use RealSense D435i to simutaneously capture RGB images and point cloud data.
