@@ -51,27 +51,36 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>nav_msgs</build_depend>
+  <build_depend>move_base_msgs</build_depend>
   <build_depend>ropsy</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
+  <build_depend>std_srvrs</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>tf2_ros</build_depend>
+  <build_depend>realsense2_camera</build_depend>
   <build_depend>visualization_msgs</build_depend>
   <build_export_depend>geometry_msgs</build_export_depend>
+  <build_export_depend>move_base_msgs</build_export_depend>
   <build_export_depend>nav_msgs</build_export_depend>
   <build_export_depend>ropsy</build_export_depend>
   <build_export_depend>sensor_msgs</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>
   <build_export_depend>tf</build_export_depend>
   <build_export_depend>tf2_ros</build_export_depend>
+  <build_export_depend>realsense2_camera</build_export_depend>
+  <build_export_depend>std_srvrs</build_export_depend>
   <build_export_depend>visualization_msgs</build_export_depend>
   <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>move_base_msgs</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
   <exec_depend>ropsy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>tf</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>std_srvrs</exec_depend>
+  <exec_depend>realsense2_camera</exec_depend>
   <exec_depend>visualization_msgs</exec_depend>
 
 

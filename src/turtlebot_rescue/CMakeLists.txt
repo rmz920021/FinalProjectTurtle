@@ -7,19 +7,7 @@ project(turtlebot_rescue)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
-  geometry_msgs
-  nav_msgs
-  nav_msgs
-  rospy
-  sensor_msgs
-  std_msgs
-  tf
-  tf2_ros
-  visualization_msgs
-)
-
+find_package(catkin REQUIRED COMPONENTS rospy geometry_msgs nav_msgs sensor_msgs std_srvs move_base_msgs actionlib tf tf2_ros realsense2_camera )
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
