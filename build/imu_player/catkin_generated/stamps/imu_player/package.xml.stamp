@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>imu_player</name>
+  <version>0.0.1</version>
+  <description>The imu_player package for replaying robot velocities from CSV data</description>
+
+  <!-- Maintainer information -->
+  <maintainer email="your_email@example.com">Your Name</maintainer>
+
+  <!-- License information -->
+  <license>BSD</license>
+
+  <!-- Dependencies -->
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+
+  <!-- Buildtool dependencies -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Export information -->
+  <export>
+  </export>
+</package>

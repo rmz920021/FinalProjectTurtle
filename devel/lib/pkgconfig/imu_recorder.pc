@@ -1,0 +1,8 @@
+prefix=/home/cc/ee106a/fa24/class/ee106a-aez/Desktop/imu_project/devel
+
+Name: imu_recorder
+Description: Description of imu_recorder
+Version: 0.0.1
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

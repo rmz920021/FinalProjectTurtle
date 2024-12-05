@@ -1,0 +1,4 @@
+<launch>
+    <!-- Launch the IMU recording node -->
+    <node pkg="imu_recorder" type="record_imu_node.py" name="record_imu_node" output="screen" />
+</launch>
