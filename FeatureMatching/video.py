@@ -17,8 +17,7 @@ def capture_frame(pipeline):
 
 def orb_feature_matching(image1, image2):
     """Perform ORB feature detection and matching."""
-    orb = cv2.ORB_create(nfeatures=10)
-
+    orb = cv2.ORB_create(nfeatures=20)
     # Detect and compute features
     kp1, des1 = orb.detectAndCompute(image1, None)
     kp2, des2 = orb.detectAndCompute(image2, None)
@@ -65,7 +64,7 @@ def main():
     pipeline.start(config)
 
     # Load scout TurtleBot's last image
-    scout_image = cv2.imread('../Assets/feature-1_Color.png', cv2.IMREAD_GRAYSCALE)
+    scout_image = cv2.imread('../Assets/set-1_Color.png', cv2.IMREAD_GRAYSCALE)
     if scout_image is None:
         print("Error: Could not load scout image. Check the file path.")
         return
@@ -103,7 +102,7 @@ def main():
             print("Matched 3D Points:", points_3d)
 
             # Visualize matches
-            matched_image = cv2.drawMatches(scout_image, kp1, current_image, kp2, matches[:10], None)
+            matched_image = cv2.drawMatches(scout_image, kp1, current_image, kp2, matches[:20], None)
             cv2.imshow('Feature Matching and 3D Mapping', matched_image)
 
             # Exit on 'q' key press
