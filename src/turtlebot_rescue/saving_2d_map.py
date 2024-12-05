@@ -1,59 +1,47 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import rospy
 import os
-import json
-from nav_msgs.msg import Odometry
-from sensor_msgs.msg import LaserScan
+import rospy
+import time
 
-# File paths to save data
-map_file = os.path.expanduser('~/ee106a-aen/Desktop/FinalProjectTurtle/src/turtlebot_rescue/saved_data/slam_map')
-pose_file = os.path.expanduser('~/ee106a-aen/Desktop/FinalProjectTurtle/src/turtlebot_rescue/saved_data/robot_pose.json')
+# Define paths for saving data
+map_file = "~/Desktop/FinalProjectTurtle/src/turtlebot_rescue/saved_data/slam_map"
+odom_file = "~/Desktop/FinalProjectTurtle/src/turtlebot_rescue/saved_data/robot_odom.txt"
+tf_file = "~/Desktop/FinalProjectTurtle/src/turtlebot_rescue/saved_data/robot_tf.txt"
 
-# Global variables for data
-robot_pose = None
+def save_slam_map():
+    """Saves the SLAM map using the map_saver command."""
+    rospy.loginfo("Saving SLAM map...")
+    os.system(f"rosrun map_server map_saver -f {map_file}")
+    rospy.loginfo(f"SLAM map saved at {map_file}.pgm and {map_file}.yaml")
 
-def odom_callback(data):
-    global robot_pose
-    # Extract position and orientation
-    robot_pose = {
-        'position': {
-            'x': data.pose.pose.position.x,
-            'y': data.pose.pose.position.y,
-            'z': data.pose.pose.position.z
-        },
-        'orientation': {
-            'x': data.pose.pose.orientation.x,
-            'y': data.pose.pose.orientation.y,
-            'z': data.pose.pose.orientation.z,
-            'w': data.pose.pose.orientation.w
-        }
-    }
+def save_robot_odometry():
+    """Saves the robot's odometry to a file."""
+    rospy.loginfo("Saving robot odometry...")
+    os.system(f"rostopic echo -n 1 /odom > {odom_file}")
+    rospy.loginfo(f"Robot odometry saved at {odom_file}")
 
-def save_data(map_path, pose_path):
-    global robot_pose
-
-    # Save pose
-    if robot_pose:
-        with open(pose_path, 'w') as pose_file:
-            json.dump(robot_pose, pose_file)
-        rospy.loginfo(f"Saved robot pose to {pose_path}")
-
-    # Save map using ROS command
-    os.system(f"rosrun map_server map_saver -f {map_path}")
-    rospy.loginfo(f"Saved SLAM map to {map_path}.pgm and {map_path}.yaml")
+def save_robot_tf():
+    """Saves the robot's transformation data to a file."""
+    rospy.loginfo("Saving robot transformation data...")
+    os.system(f"rostopic echo -n 1 /tf > {tf_file}")
+    rospy.loginfo(f"Robot transformation data saved at {tf_file}")
 
 def main():
-    rospy.init_node('save_scout_data', anonymous=True)
+    rospy.init_node('save_robot_data', anonymous=True)
 
-    # Subscribe to odometry topic
-    rospy.Subscriber('/odom', Odometry, odom_callback)
+    # Allow time for the ROS environment to initialize
+    rospy.loginfo("Waiting for ROS topics to become active...")
+    time.sleep(5)
 
-    rospy.loginfo("Drive the robot to map the environment. Press Ctrl+C when done.")
-    rospy.spin()
+    try:
+        save_slam_map()
+        save_robot_odometry()
+        save_robot_tf()
+    except Exception as e:
+        rospy.logerr(f"An error occurred: {e}")
 
-    # Save data after exploration
-    save_data(map_file, pose_file)
+    rospy.loginfo("All data saved successfully.")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
