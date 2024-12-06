@@ -72,4 +72,8 @@ clicked_coord = main(rgb_img_path)
 rgb_img, depth_img = readInstantImage(rgb_img_path, depth_img_path, display=False)
 intrinsic_matrix = loadCameraConfig(depth_img)
 
-map2DTo3D(rgb_img, depth_img, clicked_coord[0], intrinsic_matrix)
+try:
+    map2DTo3D(rgb_img, depth_img, clicked_coord[0], intrinsic_matrix)
+except:
+    print("----------------------------")
+    print("You didnt clicked any points")
