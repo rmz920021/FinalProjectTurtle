@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+clicked_2D_coord = []
 
 def mouse_callback(event, x, y, flags, param):
     """
@@ -9,7 +10,7 @@ def mouse_callback(event, x, y, flags, param):
     image, window_name = param
     if event == cv2.EVENT_LBUTTONDOWN:  # Left mouse button click
         print(f"Clicked at: ({x}, {y})")  # Print the coordinates
-
+        clicked_2D_coord.append((y, x))
         # Draw a circle on the image where clicked
         cv2.circle(image, (x, y), 5, (0, 255, 0), -1)
 
@@ -51,3 +52,4 @@ def main(image_path):
             break
 
     cv2.destroyAllWindows()
+    return clicked_2D_coord
