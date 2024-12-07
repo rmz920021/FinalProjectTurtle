@@ -47,7 +47,7 @@ def map2DTo3D(rgb_img, depth_img, pixel_coord, intrinsic_matrix):
     # Scale factor between RGB and depth resolutions
     scale_y = depth_img.shape[0] / rgb_img.shape[0]
     scale_x = depth_img.shape[1] / rgb_img.shape[1]
-
+    print(pixel_coord)
     given_rgb_coord = pixel_coord  # (row, col)
 
     # Map to depth image coordinate
@@ -67,9 +67,13 @@ depth_img_path = '../Assets/dot-1_Depth.raw'
 rgb_img_path = '../Assets/dot-1_Color.png'
 
 rgb = cv.imread(rgb_img_path)
-main(rgb_img_path)
+clicked_coord = main(rgb_img_path)
 
 rgb_img, depth_img = readInstantImage(rgb_img_path, depth_img_path, display=False)
 intrinsic_matrix = loadCameraConfig(depth_img)
 
-map2DTo3D(rgb_img, depth_img, (235, 232), intrinsic_matrix)
+try:
+    map2DTo3D(rgb_img, depth_img, clicked_coord[0], intrinsic_matrix)
+except:
+    print("----------------------------")
+    print("You didnt clicked any points")
