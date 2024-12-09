@@ -12,4 +12,4 @@ export LD_LIBRARY_PATH="/home/cc/ee106a/fa24/class/ee106a-aez/Desktop/imu_projec
 export PKG_CONFIG_PATH="/home/cc/ee106a/fa24/class/ee106a-aez/Desktop/imu_project/devel/lib/pkgconfig:$PKG_CONFIG_PATH"
 export PWD='/home/cc/ee106a/fa24/class/ee106a-aez/Desktop/imu_project/build'
 export ROSLISP_PACKAGE_DIRECTORIES='/home/cc/ee106a/fa24/class/ee106a-aez/Desktop/imu_project/devel/share/common-lisp'
-export ROS_PACKAGE_PATH="/home/cc/ee106a/fa24/class/ee106a-aez/Desktop/imu_project/src:$ROS_PACKAGE_PATH"
+export ROS_PACKAGE_PATH="/home/cc/ee106a/fa24/class/ee106a-aez/Desktop/imu_project/src:/home/cc/ee106a/fa24/class/ee106a-aez/FinalProjectTurtle/imu_project/src:$ROS_PACKAGE_PATH"
