@@ -13,7 +13,8 @@ import subprocess
 # File paths for saved data
 map_file = os.path.expanduser("~/Desktop/FinalProjectTurtle/src/turtlebot_rescue/saved_data/slam_map.yaml")
 odom_file = os.path.expanduser("~/Desktop/FinalProjectTurtle/src/turtlebot_rescue/saved_data/robot_odom.txt")
-# subprocess.Popen(['roslaunch', "turtlebot3_navigation", "turtlebot3_navigation.launch", map_file])
+# subprocess.Popen(['roslaunch', "turtlebot3_navigation", "turtlebot3_navigation.launch","map_file:={map_file}"])
+# os.system(f"roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:={map_file}")
 def load_saved_pose(file_path):
     """Loads the saved robot pose from a file."""
     rospy.loginfo(f"Loading saved robot pose from {file_path}")

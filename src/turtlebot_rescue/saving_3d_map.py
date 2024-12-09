@@ -1,74 +1,54 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import rospy
 import os
-import json
-from nav_msgs.msg import Odometry
-from sensor_msgs.msg import PointCloud2
-from std_srvs.srv import Empty
+import rospy
+import time
+import shutil
+from os.path import expanduser
 
-class SaveMappingLocation:
-    def __init__(self):
-        rospy.init_node('save_mapping_location', anonymous=True)
+# Define paths for saving data
+home = expanduser("~")
+db_source = os.path.join(home, ".ros", "rtabmap.db")
+db_dest = os.path.join(home, "Desktop", "FinalProjectTurtle", "src", "turtlebot_rescue", "saved_data", "3d_map.db")
+odom_file = os.path.join(home, "Desktop", "FinalProjectTurtle", "src", "turtlebot_rescue", "saved_data", "robot_odom.txt")
+tf_file = os.path.join(home, "Desktop", "FinalProjectTurtle", "src", "turtlebot_rescue", "saved_data", "robot_tf.txt")
 
-        self.odom_data = None
-        self.pointcloud_data = None
+def save_3d_map_db():
+    """Copies the RTAB-Map database file (3D map) to the specified location."""
+    if os.path.exists(db_source):
+        rospy.loginfo("Copying 3D map database...")
+        shutil.copyfile(db_source, db_dest)
+        rospy.loginfo(f"3D map database saved at {db_dest}")
+    else:
+        rospy.logwarn(f"No RTAB-Map database found at {db_source}. Make sure RTAB-Map is running and building a map.")
 
-        # Subscribers
-        rospy.Subscriber('/odom', Odometry, self.odom_callback)
-        rospy.Subscriber('/camera/depth/color/points', PointCloud2, self.pointcloud_callback)
+def save_robot_odometry():
+    """Saves the robot's odometry to a file."""
+    rospy.loginfo("Saving robot odometry...")
+    os.system(f"rostopic echo -n 1 /odom > {odom_file}")
+    rospy.loginfo(f"Robot odometry saved at {odom_file}")
 
-        # Wait for map_saver service (if using SLAM or similar)
-        rospy.wait_for_service('map_saver')
-        self.save_map_service = rospy.ServiceProxy('map_saver', Empty)
+def save_robot_tf():
+    """Saves the robot's transformation data to a file."""
+    rospy.loginfo("Saving robot transformation data...")
+    os.system(f"rostopic echo -n 1 /tf > {tf_file}")
+    rospy.loginfo(f"Robot transformation data saved at {tf_file}")
 
-    def odom_callback(self, msg):
-        self.odom_data = {
-            'position': {
-                'x': msg.pose.pose.position.x,
-                'y': msg.pose.pose.position.y,
-                'z': msg.pose.pose.position.z
-            },
-            'orientation': {
-                'x': msg.pose.pose.orientation.x,
-                'y': msg.pose.pose.orientation.y,
-                'z': msg.pose.pose.orientation.z,
-                'w': msg.pose.pose.orientation.w
-            }
-        }
+def main():
+    rospy.init_node('save_robot_data', anonymous=True)
 
-    def pointcloud_callback(self, msg):
-        self.pointcloud_data = msg
+    # Allow time for the ROS environment to initialize
+    rospy.loginfo("Waiting for ROS topics and RTAB-Map database to become available...")
+    time.sleep(5)
 
-    def save_data(self):
-        rospy.loginfo("Saving map, odometry, and pointcloud data...")
+    try:
+        save_3d_map_db()
+        save_robot_odometry()
+        save_robot_tf()
+    except Exception as e:
+        rospy.logerr(f"An error occurred: {e}")
 
-        # Save map (if applicable)
-        try:
-            self.save_map_service()
-            rospy.loginfo("Map saved successfully!")
-        except rospy.ServiceException as e:
-            rospy.logerr(f"Failed to save map: {e}")
+    rospy.loginfo("All data saved successfully.")
 
-        # Save odometry and pointcloud data
-        if self.odom_data and self.pointcloud_data:
-            data_path = os.path.expanduser("~/FinalProjectTurtle/src/turtlebot_rescue/saved_data")
-            os.makedirs(data_path, exist_ok=True)
-
-            with open(os.path.join(data_path, 'odometry.json'), 'w') as odom_file:
-                json.dump(self.odom_data, odom_file)
-
-            # Save pointcloud as a ROS bag or other format
-            pointcloud_path = os.path.join(data_path, 'pointcloud.bag')
-            rospy.loginfo(f"Saving pointcloud to {pointcloud_path}")
-            with open(pointcloud_path, 'wb') as pc_file:
-                pc_file.write(self.pointcloud_data.data)
-
-            rospy.loginfo("Odometry and pointcloud data saved successfully!")
-        else:
-            rospy.logwarn("Odometry or pointcloud data is missing.")
-
-if __name__ == '__main__':
-    save_node = SaveMappingLocation()
-    rospy.sleep(10)  # Allow time to collect data
-    save_node.save_data()
+if __name__ == "__main__":
+    main()
