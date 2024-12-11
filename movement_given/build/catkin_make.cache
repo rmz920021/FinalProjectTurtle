@@ -1,0 +1,2 @@
+movement
+-DCATKIN_DEVEL_PREFIX=/home/cc/ee106a/fa24/class/ee106a-aez/Desktop/movement_given/devel -DCMAKE_INSTALL_PREFIX=/home/cc/ee106a/fa24/class/ee106a-aez/Desktop/movement_given/install -G Unix Makefiles
