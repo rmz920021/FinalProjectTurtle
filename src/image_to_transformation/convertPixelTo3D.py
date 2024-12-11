@@ -68,18 +68,25 @@ def map2DTo3D(rgb_img, depth_img, pixel_coords, intrinsic_matrix):
     scale_y = depth_img.shape[0] / rgb_img.shape[0]
     scale_x = depth_img.shape[1] / rgb_img.shape[1]
     homogenous_coord = []
+    cnt = 0
     for pixel_coord in pixel_coords:
         depth_coord = (int(pixel_coord[0] * scale_y), int(pixel_coord[1] * scale_x))
-        depth_value = depth_img[depth_coord[0], depth_coord[1]]  # Depth in millimeters
+        depth_value = depth_img[depth_coord[1], depth_coord[0]]  # Depth in millimeters
 
         # Convert 2D depth pixel to 3D point
-        depth_pixel = [depth_coord[1], depth_coord[0]]  # [x, y] in (col, row)
+        depth_pixel = [depth_coord[0], depth_coord[1]]  # [x, y] in (col, row)
         depth_in_meters = depth_value / 1000.0  # Convert mm to meters
 
         point_3d = rs.rs2_deproject_pixel_to_point(intrinsic_matrix, depth_pixel, depth_in_meters)
-        print(f"3D coordinate: {point_3d}")
+        if all([ v == 0.0 or v == -0.0 for v in point_3d ]):
+            # print(f"x, y, z coord are all 0.0")
+            cnt += 1
+            continue
+
+        point_3d.extend([1])
+        # print(f"3D coordinate: {point_3d}")
         homogenous_coord.append(point_3d)
-    return homogenous_coord
+    return homogenous_coord, cnt
 
     
 
