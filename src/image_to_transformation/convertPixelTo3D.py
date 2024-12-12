@@ -7,13 +7,13 @@ import cv2 as cv
 from get2DCoord import main
 
 
-def loadCameraConfig(depth_img):
+def loadCameraConfig():
     with open("camera_intrinsics.yaml", "r") as file:
         loaded_intrinsics = yaml.safe_load(file)
 
     intrinsics = rs.intrinsics()
-    intrinsics.width = depth_img.shape[1]
-    intrinsics.height = depth_img.shape[0]
+    intrinsics.width = loaded_intrinsics["width"]
+    intrinsics.height = loaded_intrinsics["height"]
     intrinsics.fx = loaded_intrinsics["fx"]
     intrinsics.fy = loaded_intrinsics["fy"]
     intrinsics.ppx = loaded_intrinsics["ppx"]
@@ -24,12 +24,12 @@ def loadCameraConfig(depth_img):
     return intrinsics
 
 
-def readInstantImage(rgb_img_path, depth_img_path, display=False):
+def readInstantImage(rgb_img_path, depth_img_path, depth_img_width, depth_img_height, display=False):
     input_file = depth_img_path
     npimg = np.fromfile(input_file, dtype=np.uint16)
-    imageSize = (240, 320)
+    # imageSize = (240, 320)
 
-    depth_img = npimg.reshape(imageSize)
+    depth_img = npimg.reshape((depth_img_height, depth_img_width))
     rgb_img = mpimg.imread(rgb_img_path)
 
     print(f"RGB image shape: {rgb_img.shape}\nDepth image shape: {depth_img.shape}")
@@ -43,24 +43,24 @@ def readInstantImage(rgb_img_path, depth_img_path, display=False):
     return rgb_img, depth_img
 
 
-def map2DTo3DFromAssignedPoint(rgb_img, depth_img, pixel_coord, intrinsic_matrix):
-    # Scale factor between RGB and depth resolutions
-    scale_y = depth_img.shape[0] / rgb_img.shape[0]
-    scale_x = depth_img.shape[1] / rgb_img.shape[1]
-    print(pixel_coord)
-    given_rgb_coord = pixel_coord  # (row, col)
+# def map2DTo3DFromAssignedPoint(rgb_img, depth_img, pixel_coord, intrinsic_matrix):
+#     # Scale factor between RGB and depth resolutions
+#     scale_y = depth_img.shape[0] / rgb_img.shape[0]
+#     scale_x = depth_img.shape[1] / rgb_img.shape[1]
+#     print(pixel_coord)
+#     given_rgb_coord = pixel_coord  # (row, col)
 
-    # Map to depth image coordinate
-    depth_coord = (int(given_rgb_coord[0] * scale_y), int(given_rgb_coord[1] * scale_x))
-    depth_value = depth_img[depth_coord[0], depth_coord[1]]  # Depth in millimeters
+#     # Map to depth image coordinate
+#     depth_coord = (int(given_rgb_coord[0] * scale_y), int(given_rgb_coord[1] * scale_x))
+#     depth_value = depth_img[depth_coord[0], depth_coord[1]]  # Depth in millimeters
 
-    # Convert 2D depth pixel to 3D point
-    depth_pixel = [depth_coord[1], depth_coord[0]]  # [x, y] in (col, row)
-    depth_in_meters = depth_value / 1000.0  # Convert mm to meters
+#     # Convert 2D depth pixel to 3D point
+#     depth_pixel = [depth_coord[1], depth_coord[0]]  # [x, y] in (col, row)
+#     depth_in_meters = depth_value / 1000.0  # Convert mm to meters
 
-    point_3d = rs.rs2_deproject_pixel_to_point(intrinsic_matrix, depth_pixel, depth_in_meters)
+#     point_3d = rs.rs2_deproject_pixel_to_point(intrinsic_matrix, depth_pixel, depth_in_meters)
 
-    print(f"3D coordinate: {point_3d}")
+#     print(f"3D coordinate: {point_3d}")
 
 
 def map2DTo3D(rgb_img, depth_img, pixel_coords, intrinsic_matrix):
@@ -83,15 +83,15 @@ def map2DTo3D(rgb_img, depth_img, pixel_coords, intrinsic_matrix):
             cnt += 1
             continue
 
-        point_3d.extend([1])
+        # point_3d.extend([1])
         # print(f"3D coordinate: {point_3d}")
         homogenous_coord.append(point_3d)
-    return homogenous_coord, cnt
+    return np.array(homogenous_coord), cnt
 
     
 
-# depth_img_path = '../Assets/dot-1_Depth.raw'
-# rgb_img_path = '../Assets/dot-1_Color.png'
+# depth_img_path = '../Assets/haotian/depth_image1.raw'
+# rgb_img_path = '../Assets/haotian/rgb_image2.jpg'
 
 # rgb = cv.imread(rgb_img_path)
 # clicked_coord = main(rgb_img_path)
