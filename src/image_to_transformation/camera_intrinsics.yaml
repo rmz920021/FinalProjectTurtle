@@ -6,8 +6,8 @@ coeffs:
 - 0.0
 fx: 385.89398193359375
 fy: 385.89398193359375
-height: 480
+height: 720
 model: distortion.brown_conrady
 ppx: 323.3508605957031
 ppy: 242.61012268066406
-width: 640
+width: 1280

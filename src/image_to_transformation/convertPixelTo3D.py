@@ -71,7 +71,7 @@ def map2DTo3D(rgb_img, depth_img, pixel_coords, intrinsic_matrix):
     cnt = 0
     for pixel_coord in pixel_coords:
         depth_coord = (int(pixel_coord[0] * scale_y), int(pixel_coord[1] * scale_x))
-        depth_value = depth_img[depth_coord[1], depth_coord[0]]  # Depth in millimeters
+        depth_value = depth_img[depth_coord[0], depth_coord[1]]  # Depth in millimeters
 
         # Convert 2D depth pixel to 3D point
         depth_pixel = [depth_coord[0], depth_coord[1]]  # [x, y] in (col, row)
