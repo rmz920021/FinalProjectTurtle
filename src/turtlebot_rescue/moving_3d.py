@@ -3,7 +3,7 @@
 import rospy
 import os
 import math
-from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
+from geometry_msgs.msg import Twist, PoseWithCovarianceStamped, PoseStamped
 from sensor_msgs.msg import LaserScan
 import numpy as np
 
@@ -62,66 +62,54 @@ class Simple3DNavigator:
         angle_diff = math.atan2(math.sin(angle_diff), math.cos(angle_diff))
         return angle_diff
     
-    def rotate_360(self):
-        """Rotate the robot 360 degrees in one direction."""
-        rospy.loginfo("Starting 360-degree rotation...")
-        cmd = Twist()
-        cmd.angular.z = self.angular_speed  # Set a positive angular speed for clockwise rotation
+    def locate(self):
+        """Locate where the robot is by exploring the environment until it receives localization data."""
+        rospy.loginfo("Exploring to locate the robot's position...")
 
-        # Total angle to rotate (360 degrees in radians)
-        total_angle = 2 * math.pi
-        rotated_angle = 0
+        exploration_duration = 60  # Time to explore (in seconds)
+        start_time = rospy.Time.now()
 
-        # Use the current yaw as a reference to track rotation
-        initial_yaw = self.quaternion_to_yaw(
-            self.current_pose.pose.pose.orientation.x,
-            self.current_pose.pose.pose.orientation.y,
-            self.current_pose.pose.pose.orientation.z,
-            self.current_pose.pose.pose.orientation.w,
-        )
+        twist = Twist()
+        pose_received = False
 
-        previous_yaw = initial_yaw
+        while not rospy.is_shutdown():
+            # Check if pose is received
+            if self.current_pose is not None:
+                rospy.loginfo("Localization successful! Pose received.")
+                pose_received = True
+                break
 
-        while not rospy.is_shutdown() and rotated_angle < total_angle:
-            # Publish the rotation command
-            self.cmd_pub.publish(cmd)
+            # Exploration strategy: random rotations and slight movements
+            elapsed_time = (rospy.Time.now() - start_time).to_sec()
+            if elapsed_time > exploration_duration:
+                rospy.logerr("Timeout exceeded: Unable to locate the robot.")
+                break
+
+            # Rotate randomly
+            twist.angular.z = np.random.choice([-self.angular_speed, self.angular_speed])
+            twist.linear.x = self.linear_speed * 0.5  # Move slightly forward
+
+            self.cmd_pub.publish(twist)
             self.rate.sleep()
 
-            # Get the current yaw
-            current_yaw = self.quaternion_to_yaw(
-                self.current_pose.pose.pose.orientation.x,
-                self.current_pose.pose.pose.orientation.y,
-                self.current_pose.pose.pose.orientation.z,
-                self.current_pose.pose.pose.orientation.w,
-            )
-
-            # Calculate the change in yaw
-            delta_yaw = current_yaw - previous_yaw
-            delta_yaw = math.atan2(math.sin(delta_yaw), math.cos(delta_yaw))  # Normalize the angle
-            rotated_angle += abs(delta_yaw)
-
-            # Update previous yaw
-            previous_yaw = current_yaw
-
-        # Stop the rotation
+        # Stop the robot after locating or timeout
         self.cmd_pub.publish(Twist())
-        rospy.loginfo("360-degree rotation complete.")
 
-
+        if pose_received:
+            rospy.loginfo("Robot successfully localized.")
+        else:
+            rospy.logerr("Localization failed. Check the /rtabmap/localization_pose topic.")
+        
     def front_obstacle_distance(self):
         if self.laser_data is None:
             return None
-        # The laser scan angle range typically starts from some angle.
-        # Assuming 0 is front for simplicity and that index 0 corresponds to front (depends on your LiDAR mounting).
-        # Often, the front is at the middle index: index = len(ranges)/2
-        # We'll take a small window around the front to be more robust.
         ranges = self.laser_data.ranges
         if len(ranges) == 0:
             return None
         center_index = len(ranges) // 2
         window_size = 10
         front_ranges = ranges[center_index-window_size:center_index+window_size]
-        # Filter out invalid ranges (NaN or Inf)
+        # Filter out invalid ranges
         front_ranges = [r for r in front_ranges if not math.isinf(r) and not math.isnan(r)]
         if len(front_ranges) == 0:
             # No valid readings, assume no obstacle
@@ -134,11 +122,10 @@ class Simple3DNavigator:
             if self.current_pose is not None and self.laser_data is not None:
                 break
             self.rate.sleep()
-        rospy.loginfo("rotating 360")
-        self.rotate_360()
+        rospy.loginfo("locate itself to see where it is")
+        self.locate()
         
         rospy.loginfo("Navigating to saved 3D pose with obstacle avoidance...")
-
 
         while not rospy.is_shutdown():
             dist = self.distance_to_goal()
@@ -148,8 +135,6 @@ class Simple3DNavigator:
                 self.rate.sleep()
                 continue
 
-            # Check obstacles ahead
-            obstacle_dist = self.front_obstacle_distance()
             cmd = Twist()
 
             if dist < self.position_threshold:
@@ -163,7 +148,6 @@ class Simple3DNavigator:
                     self.cmd_pub.publish(cmd)
 
             else:
-                # Move towards the goal position unless there's an obstacle
                 dx = self.goal_pose['x'] - self.current_pose.pose.pose.position.x
                 dy = self.goal_pose['y'] - self.current_pose.pose.pose.position.y
                 heading = math.atan2(dy, dx)
@@ -175,21 +159,15 @@ class Simple3DNavigator:
                 yaw_error = heading - current_yaw
                 yaw_error = math.atan2(math.sin(yaw_error), math.cos(yaw_error))
 
-                # If there's an obstacle too close, don't move forward
+                # Obstacle handling (disabled here for simplicity)
                 # if obstacle_dist is not None and obstacle_dist < self.safe_distance:
-                if False:
-                    rospy.logwarn("Obstacle detected! Stopping or turning to avoid collision.")
-                    # Just stop or turn slightly left or right to try to escape
-                    cmd.linear.x = 0.0
-                    # Try turning slightly to see if it can find a clear path
-                    cmd.angular.z = self.angular_speed
+                #     ...
+                # else:
+                if abs(yaw_error) > 0.1:
+                    cmd.angular.z = self.angular_speed if yaw_error > 0 else -self.angular_speed
                 else:
-                    # Path is clear enough, go toward the goal
-                    if abs(yaw_error) > 0.1:
-                        cmd.angular.z = self.angular_speed if yaw_error > 0 else -self.angular_speed
-                    else:
-                        cmd.linear.x = self.linear_speed
-                        cmd.angular.z = 0.0
+                    cmd.linear.x = self.linear_speed
+                    cmd.angular.z = 0.0
 
                 self.cmd_pub.publish(cmd)
 
@@ -198,6 +176,7 @@ class Simple3DNavigator:
         # Stop the robot
         self.cmd_pub.publish(Twist())
         rospy.loginfo("Done.")
+
 
 def parse_odom_file(file_path):
     position = {}
@@ -267,59 +246,30 @@ def main():
         'ow': orientation['w']
     }
 
-    navigator = Simple3DNavigator(goal_pose)
-    navigator.run()
+    # --- Added Code to Publish Pose for Visualization ---
+    pose_pub = rospy.Publisher("/test_pose", PoseStamped, queue_size=1)
+    rospy.sleep(1.0)  # Wait a moment for the publisher to register
 
-if __name__ == "__main__":
-    main()
-reading_position:
-            if line_stripped.startswith('x:'):
-                position['x'] = float(line_stripped.split(':')[1])
-            elif line_stripped.startswith('y:'):
-                position['y'] = float(line_stripped.split(':')[1])
-            elif line_stripped.startswith('z:'):
-                position['z'] = float(line_stripped.split(':')[1])
+    pose_msg = PoseStamped()
+    pose_msg.header.frame_id = "map"
+    pose_msg.header.stamp = rospy.Time.now()
+    pose_msg.pose.position.x = goal_pose['x']
+    pose_msg.pose.position.y = goal_pose['y']
+    pose_msg.pose.position.z = goal_pose['z']
+    pose_msg.pose.orientation.x = goal_pose['ox']
+    pose_msg.pose.orientation.y = goal_pose['oy']
+    pose_msg.pose.orientation.z = goal_pose['oz']
+    pose_msg.pose.orientation.w = goal_pose['ow']
 
-        if reading_orientation:
-            if line_stripped.startswith('x:'):
-                orientation['x'] = float(line_stripped.split(':')[1])
-            elif line_stripped.startswith('y:'):
-                orientation['y'] = float(line_stripped.split(':')[1])
-            elif line_stripped.startswith('z:'):
-                orientation['z'] = float(line_stripped.split(':')[1])
-            elif line_stripped.startswith('w:'):
-                orientation['w'] = float(line_stripped.split(':')[1])
+    # Publish the pose for visualization in RViz
+    pose_pub.publish(pose_msg)
+    rospy.loginfo("Published the goal pose for visualization in RViz.")
 
-    if ('x' not in position or 'y' not in position or 
-        'z' not in position or 'x' not in orientation or
-        'y' not in orientation or 'z' not in orientation or
-        'w' not in orientation):
-        raise ValueError("Failed to parse position and orientation from odometry file.")
-
-    return position, orientation
-
-def main():
-    rospy.init_node('go_to_saved_pose_3d', anonymous=True)
-
-    rospy.loginfo("Reading saved odometry from file...")
-    try:
-        position, orientation = parse_odom_file(odom_file)
-    except Exception as e:
-        rospy.logerr(f"Failed to parse odometry file: {e}")
-        return
-
-    goal_pose = {
-        'x': position['x'],
-        'y': position['y'],
-        'z': position['z'],
-        'ox': orientation['x'],
-        'oy': orientation['y'],
-        'oz': orientation['z'],
-        'ow': orientation['w']
-    }
+    # -----------------------------------------------------
 
     navigator = Simple3DNavigator(goal_pose)
     navigator.run()
 
 if __name__ == "__main__":
     main()
+
